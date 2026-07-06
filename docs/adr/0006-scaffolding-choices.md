@@ -1,6 +1,6 @@
 # ADR-0006: Scaffolding choices — workspace layout, bindings, packaging, CI
 
-**Status:** Proposed — implemented in the initial scaffold, awaiting Henry's review; each choice is cheap to reverse now and expensive later
+**Status:** Accepted (Henry, 2026-07-06, after the CI matrix went green on both OSes)
 **Date:** 2026-07-06
 **Deciders:** Henry
 
@@ -61,6 +61,6 @@ Application workspace, not a library — the lockfile is part of reproducibility
 
 ## Action Items
 
-1. [ ] Henry: review and either accept this ADR or flag choices to change (all still cheap to reverse).
-2. [ ] Push to GitHub and confirm the CI matrix goes green on both OSes.
+1. [x] Henry: review and either accept this ADR or flag choices to change — accepted 2026-07-06.
+2. [x] Push to GitHub and confirm the CI matrix goes green on both OSes — green on first run (2026-07-06).
 3. [ ] When the first real kernel state lands: pick the ECS crate (reviewed decision, updates ADR-0002's TBD).
