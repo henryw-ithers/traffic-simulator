@@ -118,7 +118,7 @@ Natural Language Interface (later phase)
 | Kernel ↔ Python bridge | **PyO3 / maturin** | Exposes the Rust kernel as a native Python extension module so the rest of the platform can call it directly. |
 | Data import, scenario config, demand modeling, analysis, visualization | **Python** | Fast iteration; mature geospatial/graph/transit ecosystem (`osmnx`, `networkx`, `geopandas`, `shapely`, `gtfs-kit`/`partridge`). |
 | Geospatial storage | **PostgreSQL + PostGIS** | De facto standard for road/transit/demand geospatial data at any real scale. |
-| Scenario definitions | **Versioned data files (YAML/JSON)**, not code | A scenario is a set of graph mutations + demand overrides layered on a base network — keeping it as data makes scenarios diffable and reproducible. |
+| Scenario definitions | **Typed operation vocabulary in layerable YAML (schema-validated), authored by hand or via a Python authoring library** | Scenarios stay pure data — diffable, validatable, safe to share; scripting power lives at authoring time only. Experiments (which scenarios, seeds, demand, duration) are separate files that pin everything a published comparison depends on. See [ADR-0004](docs/adr/0004-scenario-definition-format.md). |
 | Kernel entity model | **Entity-Component-System (ECS)**, lane-level graph, unified multi-modal representation | New infrastructure/mode types are added as new components/systems without touching the core simulation loop. See [ADR-0002](docs/adr/0002-core-simulation-data-model.md). |
 | Kernel ↔ Python boundary | **Batch-run API over step()-structured internals; columnar data transfer; Python-built network loaded via a versioned file format** | Minimal public surface for v0.1, with internals disciplined so Phase 2's live control API is additive. See [ADR-0003](docs/adr/0003-kernel-python-interface.md). |
 | Visualization | TBD — likely deck.gl/kepler.gl or a lightweight Leaflet map for spatial output | Deferred until v0.1 has something worth visualizing. |
@@ -163,7 +163,7 @@ Residential streets don't need microscopic simulation. Interior neighbourhood st
 
 Every modification to the city is a **scenario**, layered on top of the base network — never a mutation of it. This keeps comparisons clean and reproducible.
 
-Example scenarios: baseline (existing Toronto), add a turning lane, add a bus lane, new subway line, new road, adaptive traffic lights, an alternative transit line proposal. A scenario is defined as data (graph mutations + demand overrides), not code, so scenarios can be authored, diffed, and shared without touching the simulation kernel.
+Example scenarios: baseline (existing Toronto), add a turning lane, add a bus lane, new subway line, new road, adaptive traffic lights, an alternative transit line proposal. A scenario is defined as data (a typed, schema-validated list of operations against a versioned base network), not code, so scenarios can be authored, diffed, validated, and shared without touching the simulation kernel — and layered, so combined studies (e.g. bus lane + signal priority) compose from individual scenarios. Run parameters (seeds, demand, duration) live in separate experiment files, making "same conditions" comparisons a structural guarantee. See [ADR-0004](docs/adr/0004-scenario-definition-format.md).
 
 ## Performance metrics
 
