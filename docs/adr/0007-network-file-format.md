@@ -1,6 +1,6 @@
-# ADR-0007: v0.1 network file format — lane-level logical schema, readable stable IDs, canonical JSON container
+# ADR-0007: v0.1 network file format — lane-level logical schema, readable stable IDs, columnar container
 
-**Status:** Proposed — awaiting Henry's review
+**Status:** Accepted (Henry, 2026-07-06 review) — schema, IDs, and versioning as proposed; container **amended during review** from the originally proposed canonical JSON to columnar-first (Parquet bundle)
 **Date:** 2026-07-06
 **Deciders:** Henry
 
@@ -58,13 +58,22 @@ The `meta` block carries:
 - `provenance`: source snapshot dates (OSM fetch date, signal/timing snapshot date), builder version, corridor bbox.
 - `crs`: the projected CRS of all coordinates (proposed: EPSG:32617 / UTM 17N — meters). The kernel does no geodesy; coordinates are opaque meters to it.
 
-### 4. Container: canonical JSON (single file, optionally gzipped)
+### 4. Container: columnar from day one — a zip bundle of Parquet tables plus `meta.json`
 
-v1 serializes the logical schema as **canonical JSON** — UTF-8, lexicographically sorted keys, fixed numeric formatting — so that equality, diffing, and content-hashing are trivial and the whole artifact is human-inspectable end-to-end.
+*(Amended at the 2026-07-06 review: the original proposal was canonical JSON with a city-scale columnar revisit; Henry opted for columnar-first so the container is scale-ready from the start and no format migration is ever needed.)*
 
-At corridor scale (audit: ~3.9 k nodes, ~10.5 k directed edges before lane expansion; call it a few tens of thousands of lane/connection records) this is single-digit megabytes and loads in milliseconds — container performance is a non-issue for v0.1. The known revisit trigger is **city scale**, where a columnar container (Arrow/Parquet tables mirroring the same logical schema) becomes attractive; that would be a `format_version` bump with a documented converter, and the logical schema is deliberately table-shaped so the migration is mechanical.
+A network file is `<name>.network.zip` containing:
 
-**Explicitly not settled here:** ADR-0003 action item 3 (numpy vs Arrow for *runtime* result transfer) is untouched — the file container and the FFI boundary are independent decisions, and choosing JSON here neither requires nor precludes Arrow there.
+- `meta.json` — the §3 metadata block, kept as tiny human-readable JSON;
+- one Parquet file per record group (`nodes.parquet`, `segments.parquet`, `lanes.parquet`, `connections.parquet`, `signals.parquet`), each mirroring the logical schema exactly, rows sorted by `id`.
+
+Costs accepted with this choice, and their mitigations:
+
+- **Kernel dependency:** the loader takes on `arrow-rs`/`parquet` (crate confirmed at implementation) — heavier than `serde_json`, accepted.
+- **Determinism/hashing discipline:** Parquet bytes are only reproducible if writer settings and library version are pinned. The builder pins pyarrow version + writer options (compression, row-group size — specified in the format doc), preserving the "same inputs ⇒ byte-identical file" contract; `content_hash` is defined over the table members in a fixed order (see format doc).
+- **Human inspectability:** Parquet isn't reviewable in a text editor, so the builder ships a **non-normative `--export-json` debug view** (canonical JSON of the same logical content) for review and diffing. The zip member `meta.json` keeps identity/provenance readable without tools.
+
+**Explicitly not settled here:** ADR-0003 action item 3 (numpy vs Arrow for *runtime* result transfer) is untouched — the file container and the FFI boundary remain independent decisions; a columnar file neither requires nor precludes Arrow at the FFI.
 
 ## Options Considered
 
@@ -95,19 +104,20 @@ At corridor scale (audit: ~3.9 k nodes, ~10.5 k directed edges before lane expan
 
 | Option | Assessment |
 |---|---|
-| **Canonical JSON, optional gzip (chosen)** | Human-inspectable, diffable, trivially hashable, serde/`json` support on both sides with zero new kernel dependencies; slower and bulkier at city scale — accepted with a named revisit trigger and a mechanical migration path. |
-| Arrow/Parquet multi-table | Columnar, scales to city size, dovetails with a possible Arrow FFI future; but adds a heavyweight kernel dependency *now*, is not human-readable or line-diffable, and needs a bundling convention for multi-table files. Premature for a corridor. |
+| **Parquet tables + `meta.json` in a zip (chosen at review)** | Columnar, scales to city size with no future migration, dovetails with a possible Arrow FFI future; costs a heavyweight kernel dependency now, pinned-writer discipline for determinism, and a JSON debug export for reviewability — all accepted (Henry, 2026-07-06). |
+| Canonical JSON, optional gzip (original proposal) | Human-inspectable, diffable, trivially hashable, zero new kernel dependencies; but slower/bulkier at city scale and implies a later container migration — rejected at review in favor of being scale-ready from day one. Survives as the builder's non-normative `--export-json` debug view. |
 | GeoPackage (SQLite) | GIS-tool friendly; but drags SQLite + geo schema conventions into the kernel, weak diffability, and canonical-form hashing is awkward. Better as an optional *export* from the builder for inspection. |
 | Custom binary | Maximum control, maximum cost: a parser to verify on both sides, no tooling, opaque to review. Nothing at v0.1 scale justifies it. |
 
 ## Trade-off Analysis
 
-The through-line matches ADRs 0003/0004: **the artifact that circulates is small, inspectable, and pinned; complexity lives in the builder, not the contract.** Every choice biases toward transparency and reviewability at corridor scale (readable IDs, JSON, hashes) while leaving named, mechanical escape hatches for city scale (columnar container behind a format_version bump; interned IDs in the kernel). The main accepted cost is builder-side: deterministic ID derivation and lane-connectivity inference are real work — but that work is mandated by prior ADRs regardless of how the file is spelled.
+The through-line matches ADRs 0003/0004: **the artifact that circulates is small, inspectable, and pinned; complexity lives in the builder, not the contract.** Readable IDs, a human-readable `meta.json`, and the builder's JSON debug export keep the transparency property; the columnar container (per the review amendment) buys city-scale readiness up front at the price of a kernel Arrow dependency and pinned-writer determinism discipline. The main accepted cost remains builder-side: deterministic ID derivation and lane-connectivity inference are real work — but that work is mandated by prior ADRs regardless of how the file is spelled.
 
 ## Consequences
 
 - `docs/formats/network-format.md` becomes a versioned, published spec; changes to it are reviewed like schema changes (same rhythm as ADR-0004's operation vocabulary).
-- The Python builder gains a determinism obligation (same inputs ⇒ byte-identical file), testable in CI alongside the kernel's determinism harness.
+- The Python builder gains a determinism obligation (same inputs ⇒ byte-identical file), testable in CI alongside the kernel's determinism harness. With the columnar container this additionally requires pinning the pyarrow version and Parquet writer options in the builder's environment.
+- The kernel loader takes an `arrow-rs`/`parquet` dependency when implemented; the builder ships a non-normative `--export-json` debug view so network content stays reviewable.
 - The kernel's first real milestone becomes concrete: load a v1 file, validate referential integrity, intern IDs, and expose the loaded network via the existing `Simulation` API — this is also when the ECS crate decision (ADR-0002 action item 1) fires.
 - The demand format (ADR-0005 action item 1) inherits the ID and versioning conventions defined here; it should be specified as a sibling section/file when demand work starts.
 - Signal timing plans in the file come from the City's rolling 7-day snapshots (archived by `fetch_toronto_open_data.py`) — the provenance block records which snapshot.
@@ -115,7 +125,7 @@ The through-line matches ADRs 0003/0004: **the artifact that circulates is small
 
 ## Action Items
 
-1. [ ] Henry: review and accept/amend this ADR (schema, ID style, JSON container are all cheap to change before the builder exists).
+1. [x] Henry: review and accept/amend this ADR. — *Accepted 2026-07-06: schema, IDs, versioning as proposed; container amended to columnar-first (Parquet bundle) during review.*
 2. [ ] Flesh out `docs/formats/network-format.md` from skeleton to field-complete v1 spec as the builder is implemented.
 3. [ ] Implement the Python builder (OSM extract → v1 file) with a builder-determinism test in CI.
 4. [ ] Implement the kernel loader with validation (referential integrity, connectivity sanity) — triggers the ECS crate decision (ADR-0002 #1).

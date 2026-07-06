@@ -1,15 +1,21 @@
 # Network file format — v1 (DRAFT)
 
-**Status:** Draft skeleton, pending acceptance of [ADR-0007](../adr/0007-network-file-format.md). Field lists below are indicative; they are completed and frozen as the builder is implemented (ADR-0007 action item 2).
+**Status:** Draft skeleton under the accepted [ADR-0007](../adr/0007-network-file-format.md) (2026-07-06, container amended to columnar at review). Field lists below are indicative; they are completed and frozen as the builder is implemented (ADR-0007 action item 2).
 
-One file describes one loadable network: canonical JSON (UTF-8, sorted keys, fixed numeric formatting), optionally gzipped (`.json` / `.json.gz`). All coordinates are projected meters in the CRS named in `meta.crs`.
+One file describes one loadable network: **`<name>.network.zip`**, containing
+
+- `meta.json` — the `meta` block below (tiny, human-readable JSON);
+- `nodes.parquet`, `segments.parquet`, `lanes.parquet`, `connections.parquet`, `signals.parquet` — one Parquet table per record group, mirroring the field tables below.
+
+All coordinates are projected meters in the CRS named in `meta.crs`. The builder also offers a **non-normative** `--export-json` debug view (canonical JSON of the same logical content) for review and diffing; the zip is the artifact of record.
 
 ## Canonicalization rules (normative)
 
-1. Object keys sorted lexicographically; arrays in the order defined per record group (stated below).
-2. Floats serialized with the minimal round-trip representation; no trailing zeros; no NaN/Infinity.
-3. `meta.content_hash` = SHA-256 (hex) of the canonical serialization with the `content_hash` member removed.
-4. Same source inputs + same builder version ⇒ byte-identical file (builder determinism; CI-enforced).
+1. Rows in every table sorted ascending by `id`; columns in the order defined per record group below.
+2. Parquet writer settings are pinned by the builder (library version, compression, row-group size — exact values frozen at builder implementation) so identical inputs produce identical bytes; no NaN/Infinity values permitted.
+3. `meta.content_hash` = SHA-256 (hex) over the byte concatenation of the five table members in the fixed order nodes, segments, lanes, connections, signals. `meta.json` is excluded (it contains the hash).
+4. Same source inputs + same builder version (incl. pinned pyarrow) ⇒ byte-identical zip members (builder determinism; CI-enforced).
+5. Zip members are stored deterministically (fixed member order, zeroed timestamps).
 
 ## Record groups
 
