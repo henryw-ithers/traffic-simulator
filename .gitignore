@@ -1,0 +1,52 @@
+# Data (never commit raw or derived datasets)
+/data/
+*.osm
+*.pbf
+*.gtfs
+*.gpkg
+*.shp
+*.shx
+*.dbf
+*.prj
+
+# Rust
+/core/target/
+**/target/
+Cargo.lock.bak
+*.pdb
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Databases
+*.sqlite3
+*.db
+pgdata/
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
