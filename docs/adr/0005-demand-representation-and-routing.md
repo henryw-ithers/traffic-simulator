@@ -68,5 +68,5 @@ Both choices follow the pattern established by ADRs 0002–0004: **stabilize the
 1. [ ] Design the demand file format (schema, versioning) together with the network format — they share the stable-ID discipline and should be documented as a pair.
 2. [ ] Specify the v0.1 demand generator: inputs (boundary counts, turning proportions by time-of-day period), seeded sampling procedure, output trip list.
 3. [ ] Identify and fetch the actual turning movement count datasets for the focus corridor intersections (City of Toronto open data) — the generator's inputs need to exist.
-4. [ ] In `docs/validation.md` (to be written), distinguish consistency checks (reproducing generation inputs) from true validation (independent travel times/queue observations).
+4. [x] In `docs/validation.md` (to be written), distinguish consistency checks (reproducing generation inputs) from true validation (independent travel times/queue observations). — *Done (2026-07-06): `docs/validation.md` § "The consistency-check trap" draws the distinction and labels every acceptance criterion as consistency or validation.*
 5. [ ] Define the kernel's route-following representation (how a vehicle resolves its next lane/turn against the graph) as part of the v0.1 component set design (ADR-0002 action item 2).

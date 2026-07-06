@@ -81,7 +81,7 @@ The through-line in all three choices is the same: **keep the public boundary mi
 ## Action Items
 
 1. [ ] Design the v0.1 network file format (schema, versioning scheme, documentation) — coordinate with ADR-0004 so scenario mutations can reference it cleanly.
-2. [ ] Define the v0.1 public API surface concretely (load/run/results signatures) as part of scaffolding.
-3. [ ] Decide numpy-only vs. Arrow for columnar transfer during scaffolding (implementation detail; driven by whether zero-copy dataframe interop earns its dependency weight).
-4. [ ] Write a determinism test harness early: same seed + same network + same demand ⇒ byte-identical results on the same platform/binary, enforced in CI from the first runnable kernel.
-5. [ ] Document the three internal disciplines (step loop, command buffer, queryable state) in the kernel crate's top-level docs so they survive contributor turnover.
+2. [ ] Define the v0.1 public API surface concretely (load/run/results signatures) as part of scaffolding. — *Partially: the 2026-07-06 scaffold ships a stub (`Simulation(seed)` / `step` / `run` / `state_digest`); the real `load(network, demand, seed)`/results signatures are blocked on the network and demand file formats.*
+3. [ ] Decide numpy-only vs. Arrow for columnar transfer during scaffolding (implementation detail; driven by whether zero-copy dataframe interop earns its dependency weight). — *Deferred past scaffolding (ADR-0006, 2026-07-06): no results cross the boundary yet; decide when they do.*
+4. [x] Write a determinism test harness early: same seed + same network + same demand ⇒ byte-identical results on the same platform/binary, enforced in CI from the first runnable kernel. — *Done (2026-07-06, stub scope): tick-granular digest comparison in Rust (`core/kernel/tests/determinism.rs`) and through the bindings incl. cross-process runs (`python/tests/test_determinism.py`), enforced in CI on Ubuntu + Windows; must grow to load pinned network/demand inputs and compare full result output once those exist.*
+5. [x] Document the three internal disciplines (step loop, command buffer, queryable state) in the kernel crate's top-level docs so they survive contributor turnover. — *Done (2026-07-06): `core/kernel/src/lib.rs` crate docs, flagged as requirements code review must enforce.*

@@ -72,7 +72,7 @@ There is one graph, not one graph per mode. Edges and nodes carry which modes ma
 
 ## Action Items
 
-1. [ ] Choose a specific lightweight ECS crate (`hecs`, `legion`, or `shipyard`) before writing component types — implementation detail, decide during scaffolding.
+1. [ ] Choose a specific lightweight ECS crate (`hecs`, `legion`, or `shipyard`) before writing component types — implementation detail. *Deferred past scaffolding (ADR-0006, 2026-07-06): the kernel stub has no entities yet; still to be chosen before the first component types are written.*
 2. [ ] Define the v0.1 component set: `RoadSegment`, `Lane`, `Intersection`, `Signal` (car mode only, per README v0.1 scope) — defer transit/zone components.
 3. [ ] Design the OSM → lane-level graph import mapping for the focus corridor, including how missing/ambiguous lane tagging is inferred or defaulted.
 4. [ ] Define the mode-tagging scheme for graph edges/nodes (which modes can use a given lane) in a way that stays open to new modes being added later.

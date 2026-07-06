@@ -105,7 +105,7 @@ Using an existing engine purely as an external validation reference (not as the 
 
 ## Action Items
 
-1. [ ] Design the core data model for the road graph (nodes, edges, lanes, signals) — first hands-on test of whether the from-scratch approach is tractable at v0.1 scope **and** whether it supports adding new infrastructure/mode types without structural rework. Capture as ADR-0002.
+1. [x] Design the core data model for the road graph (nodes, edges, lanes, signals) — first hands-on test of whether the from-scratch approach is tractable at v0.1 scope **and** whether it supports adding new infrastructure/mode types without structural rework. Capture as ADR-0002. — *Done at design level (ADR-0002, 2026-07-06); the hands-on tractability confirmation remains open as ADR-0002 action item 5.*
 2. [ ] Prototype the minimal car-following model for the v0.1 corridor and compare aggregate travel-time output against a SUMO run of the same OSM extract, as an early sanity check.
-3. [ ] Sketch the live control/state-inspection API the Rust kernel will expose to Python (the project's TraCI equivalent), even though it isn't needed until Phase 2.
+3. [x] Sketch the live control/state-inspection API the Rust kernel will expose to Python (the project's TraCI equivalent), even though it isn't needed until Phase 2. — *Resolved by ADR-0003 (2026-07-06): deliberately deferred to Phase 2, to be designed against the first real optimizer; the kernel's internal disciplines (explicit step loop, command buffer, queryable state — implemented in the 2026-07-06 scaffold) keep it an additive change.*
 4. [ ] Revisit this ADR if v0.1 calibration against real traffic counts proves unworkable within a reasonable timeframe, or if the extensibility goal turns out to require a different approach than expected.
