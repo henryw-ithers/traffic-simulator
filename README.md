@@ -236,7 +236,30 @@ Everything else in this document is deferred until v0.1 is calibrated.
 
 ## Getting started
 
-Project scaffolding (Rust workspace, Python package, build tooling) has not been created yet — this section will be filled in once `/core` and `/python` exist with a runnable v0.1.
+The scaffold exists (`/core` Rust workspace, `/python` package, CI with a determinism harness stub — see [ADR-0006](docs/adr/0006-scaffolding-choices.md)), but there is **no runnable simulation yet**: the kernel is a stub that exercises the step-loop/command-buffer/determinism disciplines from [ADR-0003](docs/adr/0003-kernel-python-interface.md), nothing more.
+
+### Prerequisites
+
+- **Rust** (stable, via [rustup](https://rustup.rs/)). On Windows use the default MSVC toolchain, which needs [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) with the "Desktop development with C++" workload. (The GNU toolchain also works, but PyO3 then needs a full MinGW distribution such as [WinLibs](https://winlibs.com/) on `PATH` — Rust's bundled MinGW lacks the `dlltool`/`as` pair.)
+- **Python ≥ 3.12**.
+
+### Build and test
+
+```bash
+# Rust kernel (from core/)
+cargo test --workspace
+cargo fmt --check
+cargo clippy --workspace --all-targets -- -D warnings
+
+# Python (from the repo root)
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -e "python[dev]"     # pure-Python package + dev tools
+pip install ./core/bindings      # builds the compiled kernel via maturin
+pytest python/tests
+ruff check python && black --check python
+```
+
+For a fast Rust-edit loop, `maturin develop --manifest-path core/bindings/Cargo.toml` rebuilds the extension into the active venv. CI runs all of the above on Ubuntu and Windows, including the determinism harness (same seed ⇒ byte-identical state digests at every tick, per platform/binary).
 
 ## Contributing
 

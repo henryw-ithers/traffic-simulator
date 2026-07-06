@@ -4,7 +4,7 @@ Guidance for AI coding agents (and contributors) working in this repository.
 
 ## Project status
 
-Pre-implementation. There is no `/core` or `/python` code yet — only planning docs. Do not scaffold large amounts of code speculatively; if asked to start implementation, confirm scope against [Initial project scope (v0.1)](README.md#initial-project-scope-v01) in the README first.
+Scaffolded, pre-simulation. `/core` (Cargo workspace: `sim-kernel` + `traffic-sim-kernel` PyO3 bindings), `/python` (`traffic_sim` package), and CI (Ubuntu + Windows, determinism harness stub) exist — see [ADR-0006](docs/adr/0006-scaffolding-choices.md) — but the kernel is a stub with no simulation logic. The next milestones are the network and demand file formats (ADR-0003/0005) and the first real kernel state. Do not scaffold further code speculatively; confirm scope against [Initial project scope (v0.1)](README.md#initial-project-scope-v01) in the README first.
 
 ## Scope discipline
 
@@ -22,7 +22,7 @@ This project has a large long-term vision (transit, ML, natural language interfa
 
 ## Conventions (apply once code exists)
 
-- **Rust**: format with `rustfmt`, lint with `clippy` (deny warnings in CI once CI exists). Prefer explicit, readable code over clever generics in the simulation loop — this code needs to be auditable, per the project's transparency principle.
+- **Rust**: format with `rustfmt`, lint with `clippy` (CI denies warnings). Prefer explicit, readable code over clever generics in the simulation loop — this code needs to be auditable, per the project's transparency principle.
 - **Python**: format/lint with `ruff`/`black`, type-hint public functions. Prefer `dataclasses`/`pydantic` models for scenario and config schemas over loose dicts.
 - **Scenarios** are data (YAML/JSON), not code — don't implement a new scenario as a hardcoded branch in simulation logic; it should be expressible as a graph mutation + demand override loaded from a scenario file.
 - **Reproducibility**: any stochastic behavior must take an explicit seed; don't rely on unseeded global RNG state.
@@ -43,4 +43,24 @@ Henry (the project owner) wants to be included as a decider on every architectur
 
 ## Commands
 
-To be filled in once the Rust workspace and Python package are scaffolded (build, test, lint, run commands for each).
+Rust (run from `core/`):
+
+```bash
+cargo test --workspace                                # all tests incl. determinism harness
+cargo fmt --check                                     # formatting (CI-enforced)
+cargo clippy --workspace --all-targets -- -D warnings # lint (CI-enforced)
+```
+
+Python (run from the repo root, inside a venv):
+
+```bash
+pip install -e "python[dev]"    # traffic_sim + pytest/ruff/black/maturin
+pip install ./core/bindings     # build + install the compiled kernel (maturin)
+pytest python/tests             # tests incl. determinism harness stub
+ruff check python
+black --check python
+```
+
+Rust-edit loop for the bindings: `maturin develop --manifest-path core/bindings/Cargo.toml`.
+
+The kernel is intentionally not a declared pip dependency of `traffic_sim` while unpublished; `traffic_sim.kernel` raises a clear install hint if the extension is missing, and kernel-dependent tests skip. CI (`.github/workflows/ci.yml`) runs everything above on Ubuntu and Windows and fails if the kernel extension fails to import.
