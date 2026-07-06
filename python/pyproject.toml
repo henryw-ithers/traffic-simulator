@@ -36,3 +36,10 @@ target-version = ["py312"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+# The project's enforced linters are ruff + black (see AGENTS.md and CI).
+# This section only keeps editor-integrated pylint from reporting false
+# positives: compiled extension modules must be allow-listed before pylint
+# will introspect their members.
+[tool.pylint.main]
+extension-pkg-allow-list = ["traffic_sim_kernel"]

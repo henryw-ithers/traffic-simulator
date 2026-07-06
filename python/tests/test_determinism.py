@@ -26,6 +26,7 @@ DT = 0.1
 
 
 def test_same_seed_identical_digest_at_every_tick() -> None:
+    """Two same-seed simulations must agree at every tick, not just at the end."""
     a = kernel.new_simulation(SEED)
     b = kernel.new_simulation(SEED)
     for tick in range(TICKS):
@@ -35,6 +36,7 @@ def test_same_seed_identical_digest_at_every_tick() -> None:
 
 
 def test_different_seeds_diverge() -> None:
+    """Different seeds must produce different state (the seed actually matters)."""
     a = kernel.new_simulation(1)
     b = kernel.new_simulation(2)
     a.step(DT)
