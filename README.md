@@ -64,15 +64,18 @@ Example proposals the platform should eventually be able to evaluate:
 
 ## Why build the simulation kernel from scratch
 
-Mature open-source traffic simulators already exist (e.g. SUMO, MATSim) and represent decades of validated work on car-following, lane-changing, and signal logic. We are deliberately not building on top of one of them for the core simulation loop, for reasons worth stating honestly:
+Mature open-source traffic simulators already exist (e.g. SUMO, MATSim) and represent decades of validated work on car-following, lane-changing, and signal logic. We are deliberately not building on top of one of them for the core simulation loop, for two reasons worth stating honestly and separately:
 
 - **Ownership and transparency of the model itself.** The core principle of this project is that every assumption behind a result should be inspectable. That's a much stronger claim when the physics (car-following, lane-changing, signal logic, transit dwell/boarding behavior) is code this project wrote and fully understands, rather than an external engine's implementation details.
-- This is a conscious trade-off for depth of understanding and control over speed of delivery. It means v0.1 will take longer to reach parity with what an existing engine could produce out of the box.
+- **Architectural freedom for open-ended modularity.** The long-term vision is for users to freely add and combine entirely new infrastructure — new road types, new transit lines and modes, novel signal behaviors, custom zone constructs — as first-class objects, not as configuration of a fixed built-in set. This isn't a claim that SUMO/MATSim can't model specific things we need today; it's that their internal data models and extension points were built around the scenarios their own communities needed, not for arbitrary new categories to be defined on equal footing with the built-ins. That's a real architectural ceiling on how far an "add anything" scenario engine could be pushed on top of an existing engine, and it's a harder property to retrofit than to design in from the start.
+- This is a conscious trade-off for depth of understanding and long-term extensibility over speed of delivery. It means v0.1 will take longer to reach parity with what an existing engine could produce out of the box.
 - "From scratch" applies to the **simulation kernel and scenario/evaluation logic** — it does not mean reinventing general-purpose infrastructure. We still depend on:
   - OS-level and standard geospatial/graph libraries (see [Architecture](#architecture))
   - A relational/spatial database (PostGIS) rather than a hand-rolled data store
   - Standard data formats (OSM, GTFS, census extracts) rather than custom ones
 - As an independent sanity check (not a dependency), it may be useful to compare our kernel's output against an existing engine (e.g. run the same OSM extract through SUMO) to catch fundamental modeling errors before comparing against real-world data.
+
+See [ADR-0001](docs/adr/0001-simulation-kernel-from-scratch.md) for the full decision record, options considered, and consequences.
 
 ## Architecture
 

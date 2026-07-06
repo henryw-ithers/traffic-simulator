@@ -30,7 +30,15 @@ This project has a large long-term vision (transit, ML, natural language interfa
 
 ## Before recommending a build vs. reuse shortcut
 
-The project has deliberately chosen to build the simulation kernel from scratch rather than adopt an existing engine (e.g. SUMO/MATSim), for transparency/ownership reasons — see README's "[Why build the simulation kernel from scratch](README.md#why-build-the-simulation-kernel-from-scratch)". Don't suggest replacing the kernel with an existing simulator; using an existing engine as an *external validation reference* is fine and encouraged.
+The project has deliberately chosen to build the simulation kernel from scratch rather than adopt an existing engine (e.g. SUMO/MATSim), for two reasons: (1) transparency/ownership of the model, and (2) architectural freedom to add arbitrary new infrastructure/mode/behavior types as first-class citizens, which existing engines' data models and extension points weren't designed for — see README's "[Why build the simulation kernel from scratch](README.md#why-build-the-simulation-kernel-from-scratch)" and [ADR-0001](docs/adr/0001-simulation-kernel-from-scratch.md). Because of reason (2), the kernel's core abstractions (road/lane/signal/mode/zone) must be designed for extensibility from the start — don't hardcode assumptions that only the currently-known set of infrastructure/mode types will ever exist. Don't suggest replacing the kernel with an existing simulator; using an existing engine as an *external validation reference* is fine and encouraged.
+
+## Architecture decisions require the user's sign-off
+
+Henry (the project owner) wants to be included as a decider on every architecture decision — language/framework choices, storage choices, module boundaries, external dependencies, data formats, etc. Concretely:
+
+- Don't unilaterally pick or change an architectural approach and present it as settled. Propose options with trade-offs and get explicit agreement first.
+- Every non-trivial architecture decision should be captured as an ADR in `docs/adr/` (numbered sequentially, e.g. `0002-*.md`), following the format used in [ADR-0001](docs/adr/0001-simulation-kernel-from-scratch.md), with Henry listed under **Deciders**.
+- If you're an agent picking up a task that implies an architectural choice not yet covered by an existing ADR, stop and ask rather than deciding silently.
 
 ## Commands
 
