@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rust:
+    name: Rust (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: core
+    steps:
+      - uses: actions/checkout@v4
+      # A Python interpreter is needed to link the pyo3 bindings' test target.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core
+      - name: Format
+        run: cargo fmt --check
+      - name: Clippy (deny warnings)
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Test (includes kernel determinism harness)
+        run: cargo test --workspace
+
+  python:
+    name: Python (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core
+      - name: Install packages (builds kernel bindings via maturin)
+        run: |
+          python -m pip install --upgrade pip
+          pip install ./core/bindings
+          pip install -e "./python[dev]"
+      - name: Kernel import check (so later skips can't hide a broken build)
+        run: python -c "import traffic_sim_kernel; print(traffic_sim_kernel.__version__)"
+      - name: Lint (ruff)
+        run: ruff check python
+      - name: Format (black)
+        run: black --check python
+      - name: Tests
+        run: pytest python/tests -q
+      - name: Determinism harness (stub)
+        run: pytest python/tests/test_determinism.py -q -ra
