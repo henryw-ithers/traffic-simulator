@@ -35,11 +35,22 @@ python python/scripts/audit_osm_lanes.py            # → docs/osm-lane-audit.md
 
 - **Dataset:** [Travel Times – Bluetooth](https://open.toronto.ca/dataset/travel-times-bluetooth/) (`61321d76-a02f-459f-bcc9-d4c4d9b86395`): 5-minute averaged sensor travel times, **2014–2017 only, dormant since 2019**. 60 routes citywide; 14 route geometries intersect our bbox (identities need a map check against Eglinton specifically — route IDs are opaque codes).
 - **Era caveat:** 2014–2017 falls inside Eglinton Crosstown LRT construction (roughly 2013–2024), which heavily distorted corridor traffic. These travel times describe construction-era conditions and are a poor validation target for a 2025–2026 baseline.
-- **Corridor verdict: GAP for a modern baseline.** No current public travel-time source found. Candidate mitigations, in rough order of preference:
-  1. **Floating-car runs** — GPS-logged drives of the corridor at defined periods; cheap, current, and we control the protocol.
-  2. **Licensed probe data** (TomTom/HERE/Google) — costs money and has redistribution limits.
-  3. **Midblock speed counts** (below) as weak spot-check evidence, honestly labeled.
-- Related but not useful here: King St Transit Pilot Bluetooth datasets (different corridor).
+- **Corridor verdict: GAP for a modern baseline.** No current public travel-time source found. Related but not useful here: King St Transit Pilot Bluetooth datasets (different corridor).
+
+### Options analysis for closing the gap (2026-07-06; decision: floating-car primary)
+
+| Option | Cost | Effort | Data quality for v0.1 | Open-science fit |
+|---|---|---|---|---|
+| **Floating-car GPS runs (chosen primary)** | ~0 | High (Henry's driving time) | Good means; thin variability (one driver/vehicle — state as limitation) | Excellent — raw GPX publishable |
+| Commercial probe data (TomTom Move/HERE/INRIX) | $$$ | Low | Excellent | Poor — license forbids redistribution; black-box processing |
+| Sampled routing-API estimates (Google/TomTom APIs) | ~0–$ | Low | Moderate — validating our model against *their* model | Weak — ToS limits storing/republishing |
+| TTC GTFS-Realtime vehicle positions as proxy | 0 | Medium | Weak for car times (dwell removal, proxy assumptions); OK for relative patterns | Good |
+| Ask the City / FOI (internal travel-time system likely still runs; Crosstown before/after studies probably exist) | 0 | Trivial + weeks of waiting | Unknown; possibly excellent | Good |
+| City traffic-camera images | 0 | Medium | Not travel times — earmarked for the **queue-observation** gap instead | Good |
+
+**Plan of record:** floating-car runs as the primary validation source (protocol doc to be written before calibration begins: route legs, AM/PM/off-peak periods aligned with count periods, 6–10 runs per direction per period, floating-driver technique, per-run condition log, calibration/validation split declared up front — see validation.md's hold-out discipline). In parallel, email/FOI the City (free; might surface the unpublished successor to the Bluetooth program or Crosstown post-opening studies). Camera images earmarked for queue observations. Probe data and routing-API sampling are fallbacks only if the above under-deliver.
+
+**When this is needed:** consumed at the **calibration milestone** (after kernel physics, network format, and demand generation exist). Time-sensitivity is moderate, not urgent: runs should be collected reasonably close to the count era (counts are 2025–2026) so baseline conditions match — months of slack, not years. The City email/FOI should go early because its latency is weeks-to-months. See the **signal timing** section for the one genuinely perishable dataset (rolling 7-day window, archived by our fetch script).
 
 ## Traffic — midblock speeds/volumes (supplementary)
 
@@ -48,7 +59,7 @@ python python/scripts/audit_osm_lanes.py            # → docs/osm-lane-audit.md
 ## Traffic signals — timing and controller type (model input)
 
 - **Datasets:** [Traffic Signals Tabular](https://open.toronto.ca/dataset/traffic-signals-tabular/) (`1a106e88-…`, refreshed 2026-07-04): all ~2,550 signals with `SIGNALSYSTEM` and `CONTROL_MODE` per intersection, plus data dictionary. [Traffic Signal Timing](https://open.toronto.ca/dataset/traffic-signal-timing/) (`7dda2235-…`, refreshed daily): phasing and interval sequences for the **past 7 days** at ~2,300 TransSuite signals; **excludes SCOOT/SCATS adaptive signals**.
-- **Corridor verdict: found, with a plan-affecting finding.** All key corridor junctions are on TransSuite (so their timing *is* in the timing dataset — archive the 7-day windows we care about, since the dataset is a rolling window). Control modes: predominantly **semi-actuated** — Eglinton/Allen is `SA1` (south jct) and `SAV` (north jct, presence loops + vehicle extensions); Bathurst/Eglinton, St Clair junctions, Dufferin/Bloor all `SA1`; only Dufferin/Eglinton and Bathurst/Bloor are fixed-time (`FT`). Legend (from the data dictionary): SAV = semi-actuated, presence loops, vehicle extensions, no ped buttons; SA2 = semi-actuated with ped push buttons; FXT/FT = fixed time.
+- **Corridor verdict: found, with a plan-affecting finding.** All key corridor junctions are on TransSuite (so their timing *is* in the timing dataset). Because the portal serves only a **rolling 7-day window**, `fetch_toronto_open_data.py` archives a dated snapshot on every run (`/data/open/signal_timing/`) — run it at least weekly once corridor timing matters, and back up the accumulated snapshots. Control modes: predominantly **semi-actuated** — Eglinton/Allen is `SA1` (south jct) and `SAV` (north jct, presence loops + vehicle extensions); Bathurst/Eglinton, St Clair junctions, Dufferin/Bloor all `SA1`; only Dufferin/Eglinton and Bathurst/Bloor are fixed-time (`FT`). Legend (from the data dictionary): SAV = semi-actuated, presence loops, vehicle extensions, no ped buttons; SA2 = semi-actuated with ped push buttons; FXT/FT = fixed time.
 - **Consequence:** per the ADR-0002 amendment, the vehicle-actuated signal policy moves up the schedule — a fixed-time-only v0.1 cannot faithfully reproduce the corridor's dominant control mode. (Signal *state* vs *policy* decoupling already anticipates this.)
 
 ## Queue observations (validation)

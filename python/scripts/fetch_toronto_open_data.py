@@ -9,6 +9,10 @@ Downloads into ``/data/open/`` (gitignored):
   intersection (datastore dump)
 - ``bluetooth_routes_wgs84.zip``   — Bluetooth travel-time route geometries
   (2014-2017 program), to check corridor coverage
+- ``signal_timing/<date>_signal_timing.zip`` — dated snapshot of the Traffic
+  Signal Timing dataset. The portal only serves a **rolling 7-day window**, so
+  each run archives that day's window; snapshots accumulate locally and are
+  never overwritten. Run at least weekly once corridor timing matters.
 
 Sources are recorded with licenses in ``docs/data-sources.md``.
 
@@ -66,6 +70,33 @@ def fetch(dest_name: str, resource_id: str, mode: str, force: bool) -> None:
     print(f"wrote {dest} ({len(response.content):,} bytes)")
 
 
+SIGNAL_TIMING_PACKAGE = "7dda2235-999e-4a17-b228-abd0961e045d"
+
+
+def archive_signal_timing(force: bool) -> None:
+    """Snapshot the rolling 7-day Traffic Signal Timing ZIP, dated, append-only."""
+    from datetime import date
+
+    dest = OPEN_DIR / "signal_timing" / f"{date.today().isoformat()}_signal_timing.zip"
+    if dest.exists() and not force:
+        print(f"today's snapshot exists, skipping: {dest}")
+        return
+    response = requests.get(
+        f"{CKAN_BASE}/api/3/action/package_show",
+        params={"id": SIGNAL_TIMING_PACKAGE},
+        timeout=60,
+    )
+    response.raise_for_status()
+    resources = response.json()["result"]["resources"]
+    zip_url = next(r["url"] for r in resources if r.get("format", "").upper() == "ZIP")
+    print(f"archiving signal timing window from {zip_url} ...")
+    payload = requests.get(zip_url, timeout=300)
+    payload.raise_for_status()
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_bytes(payload.content)
+    print(f"wrote {dest} ({len(payload.content):,} bytes)")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--force", action="store_true", help="refetch even if cached")
@@ -74,6 +105,7 @@ def main() -> int:
     OPEN_DIR.mkdir(parents=True, exist_ok=True)
     for dest_name, resource_id, mode in RESOURCES:
         fetch(dest_name, resource_id, mode, args.force)
+    archive_signal_timing(args.force)
     return 0
 
 
