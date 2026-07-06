@@ -119,6 +119,7 @@ Natural Language Interface (later phase)
 | Data import, scenario config, demand modeling, analysis, visualization | **Python** | Fast iteration; mature geospatial/graph/transit ecosystem (`osmnx`, `networkx`, `geopandas`, `shapely`, `gtfs-kit`/`partridge`). |
 | Geospatial storage | **PostgreSQL + PostGIS** | De facto standard for road/transit/demand geospatial data at any real scale. |
 | Scenario definitions | **Versioned data files (YAML/JSON)**, not code | A scenario is a set of graph mutations + demand overrides layered on a base network — keeping it as data makes scenarios diffable and reproducible. |
+| Kernel entity model | **Entity-Component-System (ECS)**, lane-level graph, unified multi-modal representation | New infrastructure/mode types are added as new components/systems without touching the core simulation loop. See [ADR-0002](docs/adr/0002-core-simulation-data-model.md). |
 | Visualization | TBD — likely deck.gl/kepler.gl or a lightweight Leaflet map for spatial output | Deferred until v0.1 has something worth visualizing. |
 
 ## Repository layout
