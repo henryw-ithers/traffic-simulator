@@ -26,6 +26,7 @@ This project has a large long-term vision (transit, ML, natural language interfa
 - **Python**: format/lint with `ruff`/`black`, type-hint public functions. Prefer `dataclasses`/`pydantic` models for scenario and config schemas over loose dicts.
 - **Scenarios** are data (YAML/JSON), not code — don't implement a new scenario as a hardcoded branch in simulation logic; it should be expressible as a graph mutation + demand override loaded from a scenario file.
 - **Reproducibility**: any stochastic behavior must take an explicit seed; don't rely on unseeded global RNG state.
+- **Signal control is a swappable policy, never baked into signal state handling** — AI signal control over a networked sensor grid is a core project goal (see ADR-0002's 2026-07-06 amendment). Don't write signal logic that assumes fixed-time plans structurally.
 - Don't commit datasets, credentials, or `.env` files.
 
 ## Before recommending a build vs. reuse shortcut

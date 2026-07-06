@@ -62,7 +62,7 @@ Standards below follow common traffic-engineering practice (UK DMRB/TAG conventi
 |---|---|---|
 | Turning movement counts (demand input + consistency) | City of Toronto Open Data (turning movement counts) | TBD — locate counts for corridor intersections; check dates/periods |
 | Travel times (validation) | City of Toronto travel time studies; Bluetooth/WiFi sensor data if published; otherwise floating-car runs | TBD — this is the critical gap to resolve first; without independent travel times, v0.1 cannot be validated |
-| Signal timing (input, not target) | City of Toronto signal timing data / FOI if needed | TBD |
+| Signal timing **and controller type** (input, not target) | City of Toronto signal timing data / FOI if needed | TBD — controller type (fixed-time vs. vehicle-actuated vs. SCOOT) per corridor intersection determines whether v0.1's fixed-time signal policy can reproduce the baseline at all; if key intersections are actuated, the actuated policy (ADR-0002 amendment) moves up the schedule |
 | Queue observations (validation) | May require manual observation/video at Allen/Eglinton if no dataset exists | TBD |
 
 **Open risk:** if no independent travel-time source exists for the corridor, validation degrades to queue-pattern plausibility — acceptable for a first milestone but must be stated honestly in any result. Resolving travel-time data availability is an early data-work priority.

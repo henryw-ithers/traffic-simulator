@@ -204,7 +204,7 @@ The full methodology — verification/calibration/validation distinctions, GEH a
 
 - **Phase 1 — Baseline reproduction.** No AI. Reproduce existing traffic and transit behavior on the focus corridor and calibrate against real data. This is the foundation every later phase depends on.
 - **Phase 2 — Optimization.** Classical optimization algorithms for signal timing, transit priority, queue management, applied to the calibrated Phase 1 model.
-- **Phase 3 — Machine learning.** Adaptive traffic control, bus dispatch optimization, streetcar spacing, demand/incident prediction — trained and validated against the Phase 1 ground truth.
+- **Phase 3 — Machine learning.** Adaptive traffic control, bus dispatch optimization, streetcar spacing, demand/incident prediction — trained and validated against the Phase 1 ground truth. Testing whether a fully connected network of AI-controlled lights and sensors can reduce congestion is a core project goal, and the kernel's signal model is architected for it from day one (control policy is swappable, never baked in — see the [ADR-0002 amendment](docs/adr/0002-core-simulation-data-model.md)).
 - **Phase 4 — Natural language interface.** A conversational layer over simulation results (e.g. "Why is Allen Road congested?", "What happens if I add another lane?"), backed by and explainable in terms of actual simulation output.
 
 Phases 2–4 are intentionally left at vision-level detail for now — they'll be scoped in `docs/` once Phase 1 has produced a calibrated baseline to build on.
