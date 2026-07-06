@@ -1,0 +1,17 @@
+[build-system]
+requires = ["maturin>=1.9,<2"]
+build-backend = "maturin"
+
+[project]
+name = "traffic-sim-kernel"
+description = "Toronto Transportation Digital Twin — compiled simulation kernel (Rust, via PyO3)"
+requires-python = ">=3.12"
+license = "MIT"
+dynamic = ["version"]
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+
+[tool.maturin]
+features = ["extension-module"]

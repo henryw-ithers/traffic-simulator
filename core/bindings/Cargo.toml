@@ -1,0 +1,20 @@
+[package]
+name = "traffic-sim-kernel"
+description = "PyO3 bindings exposing the simulation kernel to Python as `traffic_sim_kernel`"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+name = "traffic_sim_kernel"
+crate-type = ["cdylib"]
+
+[dependencies]
+sim-kernel = { path = "../kernel" }
+pyo3 = { version = "0.29", features = ["abi3-py312"] }
+
+[features]
+# Enabled by maturin (see pyproject.toml); off by default so `cargo test
+# --workspace` can link against a Python interpreter on all platforms.
+extension-module = ["pyo3/extension-module"]
