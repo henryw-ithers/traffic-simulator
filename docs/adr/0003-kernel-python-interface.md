@@ -71,7 +71,7 @@ The through-line in all three choices is the same: **keep the public boundary mi
 ## Consequences
 
 - The kernel's internal architecture is constrained from the first line of code: explicit `step(dt)`, command-buffer mutations at tick boundaries, always-queryable ECS state with stable entity IDs. These are requirements, not suggestions — code review should treat violations as bugs.
-- Determinism ("same seed + same inputs = same result") must hold at tick granularity, not merely end-to-end, since Phase 2 will inject mutations at arbitrary ticks and replay them.
+- Determinism ("same seed + same inputs = same result") must hold at tick granularity, not merely end-to-end, since Phase 2 will inject mutations at arbitrary ticks and replay them. **Scope:** byte-identical results are guaranteed on the same platform and binary; across platforms, results are statistically equivalent but not necessarily bit-identical, since platform math libraries (libm transcendentals) may differ. Pursuing cross-platform bit-identity was considered and rejected as ongoing cost disproportionate to its value (2026-07-06 review).
 - A network file format must be designed, versioned, and documented before the kernel can load anything — this is now on the v0.1 critical path, and its design should anticipate being the base layer scenario mutations reference (coordinate with ADR-0004).
 - The Python package owns OSM import and lane inference for the focus corridor, including defaults/heuristics for incomplete tagging (per ADR-0002's action items).
 - Result accessors return columnar data; any ergonomic Python-side wrappers are built *over* the arrays, never as per-entity FFI calls.
@@ -83,5 +83,5 @@ The through-line in all three choices is the same: **keep the public boundary mi
 1. [ ] Design the v0.1 network file format (schema, versioning scheme, documentation) — coordinate with ADR-0004 so scenario mutations can reference it cleanly.
 2. [ ] Define the v0.1 public API surface concretely (load/run/results signatures) as part of scaffolding.
 3. [ ] Decide numpy-only vs. Arrow for columnar transfer during scaffolding (implementation detail; driven by whether zero-copy dataframe interop earns its dependency weight).
-4. [ ] Write a determinism test harness early: same seed + same network + same demand ⇒ byte-identical results, enforced in CI from the first runnable kernel.
+4. [ ] Write a determinism test harness early: same seed + same network + same demand ⇒ byte-identical results on the same platform/binary, enforced in CI from the first runnable kernel.
 5. [ ] Document the three internal disciplines (step loop, command buffer, queryable state) in the kernel crate's top-level docs so they survive contributor turnover.

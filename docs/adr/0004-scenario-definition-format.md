@@ -111,3 +111,4 @@ The through-line: **every choice keeps executed scenarios as inert, structured, 
 3. [ ] Define layer-conflict detection rules (same-element touches across layers ⇒ hard error with explanation).
 4. [ ] Coordinate with the network file format design (ADR-0003 action item 1): stable element IDs across regenerations, and version-mismatch behavior for scenario references.
 5. [ ] Sketch the Python authoring library API (construct ops, query base network, emit validated YAML) — can be minimal for v0.1.
+6. [ ] When designing the operation schema, don't preclude a future time dimension (e.g. an optional `at_time`/`until_time` on operations) — the project's own examples include mid-day construction closures. Not needed for v0.1, but the schema's versioning story should accommodate it as an additive change.

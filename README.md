@@ -121,6 +121,7 @@ Natural Language Interface (later phase)
 | Scenario definitions | **Typed operation vocabulary in layerable YAML (schema-validated), authored by hand or via a Python authoring library** | Scenarios stay pure data — diffable, validatable, safe to share; scripting power lives at authoring time only. Experiments (which scenarios, seeds, demand, duration) are separate files that pin everything a published comparison depends on. See [ADR-0004](docs/adr/0004-scenario-definition-format.md). |
 | Kernel entity model | **Entity-Component-System (ECS)**, lane-level graph, unified multi-modal representation | New infrastructure/mode types are added as new components/systems without touching the core simulation loop. See [ADR-0002](docs/adr/0002-core-simulation-data-model.md). |
 | Kernel ↔ Python boundary | **Batch-run API over step()-structured internals; columnar data transfer; Python-built network loaded via a versioned file format** | Minimal public surface for v0.1, with internals disciplined so Phase 2's live control API is additive. See [ADR-0003](docs/adr/0003-kernel-python-interface.md). |
+| Demand & routing | **Trip-list demand format (vehicles + departure times + explicit routes); Python routes, kernel follows** | v0.1 trips are generated from boundary counts + turning proportions; later OD/TTS-based generation fills the same format. Routing assumptions stay in Python as inspectable data. See [ADR-0005](docs/adr/0005-demand-representation-and-routing.md). |
 | Visualization | TBD — likely deck.gl/kepler.gl or a lightweight Leaflet map for spatial output | Deferred until v0.1 has something worth visualizing. |
 
 ## Repository layout
@@ -197,6 +198,8 @@ Before any optimization or AI result is trusted, the simulator must first demons
 
 Reproducibility mechanics that support this: seeded RNGs for all stochastic behavior, versioned scenario configs, and versioned/pinned input data snapshots, so a given commit + scenario + seed always produces the same result.
 
+The full methodology — verification/calibration/validation distinctions, GEH and travel-time acceptance criteria, hold-out discipline, and the v0.1 exit criteria — is in [docs/validation.md](docs/validation.md).
+
 ## Roadmap
 
 - **Phase 1 — Baseline reproduction.** No AI. Reproduce existing traffic and transit behavior on the focus corridor and calibrate against real data. This is the foundation every later phase depends on.
@@ -215,7 +218,7 @@ Phases 2–4 are intentionally left at vision-level detail for now — they'll b
 **v0.1 is deliberately narrow:**
 
 1. Import the OSM road network for the focus corridor only, as a graph.
-2. Static car-only traffic flow — no transit, no pedestrians, no AI (per Phase 1).
+2. Time-stepped, microscopic, car-only traffic simulation — no transit, no pedestrians, no AI (per Phase 1).
 3. One scenario comparison (e.g. baseline vs. an added turning lane at Eglinton/Allen).
 4. One headline metric: average travel time / delay.
 5. Minimal visualization sufficient to inspect and sanity-check results.
