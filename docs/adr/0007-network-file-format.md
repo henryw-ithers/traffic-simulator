@@ -44,7 +44,7 @@ conn:lane:…:wb:1->lane:…:nb:0   # from-lane -> to-lane
 sig:px1307                # City of Toronto PX number (audit: Eglinton/Allen N)
 ```
 
-Rationale: scenario YAML is a *human-authored document* (ADR-0004) — `close_edge: lane:15296123.2:wb:0` is reviewable and debuggable in a way opaque integers are not, and `sig:px1307` cross-references City datasets directly. The kernel interns strings to dense indices at load time, so runtime cost is a one-time mapping.
+Rationale: scenario YAML is a *human-authored document* (ADR-0004) — `close_edge: lane:15296123.2:wb:0` is reviewable and debuggable in a way opaque integers are not, and `sig:px1307` cross-references City datasets directly. The kernel interns strings to dense indices at load time, so runtime cost is a one-time mapping. *(Clarified 2026-07-06, portability review: PX is Toronto's jurisdiction-local signal reference, not part of the format — the format prescribes `sig:<local ref>` with the scheme documented per network, so other cities plug in their own identifiers.)*
 
 **Stability contract:** the builder is deterministic — same inputs + same builder version ⇒ byte-identical file (this extends the project's determinism discipline to the *builder*, and CI can enforce it the same way). IDs are stable because they derive from source identifiers, not from iteration order. Across *different* network versions, IDs may change (OSM edits, re-splits); that is why scenarios pin `base_network` + version and mismatches are hard errors (ADR-0004) — no cross-version ID stability is promised, only cross-regeneration stability of the same version.
 

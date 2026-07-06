@@ -27,6 +27,7 @@ This project has a large long-term vision (transit, ML, natural language interfa
 - **Scenarios** are data (YAML/JSON), not code — don't implement a new scenario as a hardcoded branch in simulation logic; it should be expressible as a graph mutation + demand override loaded from a scenario file.
 - **Reproducibility**: any stochastic behavior must take an explicit seed; don't rely on unseeded global RNG state.
 - **Signal control is a swappable policy, never baked into signal state handling** — AI signal control over a networked sensor grid is a core project goal (see ADR-0002's 2026-07-06 amendment). Don't write signal logic that assumes fixed-time plans structurally.
+- **Toronto is the reference city, never a core assumption** — porting to other cities is a stated long-term goal (README "Beyond Toronto"). City-specific logic (municipal data-source URLs/schemas, local identifiers like PX signal numbers, corridor definitions) belongs in importer/adapter modules and data files, never in the kernel, file formats, scenario vocabulary, or evaluation logic. Litmus test when touching core code: "would this line change for Montreal?" — if yes, it's in the wrong layer. This is a *boundary* discipline, not license to build multi-city features now (see scope discipline above).
 - Don't commit datasets, credentials, or `.env` files.
 
 ## Before recommending a build vs. reuse shortcut

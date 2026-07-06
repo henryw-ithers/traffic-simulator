@@ -73,7 +73,7 @@ Turn restrictions and inferred `turn:lanes` are resolved *before* emission: a pr
 
 | Field | Type | Notes |
 |---|---|---|
-| `id` | string | `sig:px<PX>` (City of Toronto PX number) where matched |
+| `id` | string | `sig:<jurisdiction-local ref>` where available (Toronto: City PX number, e.g. `sig:px1307`), else builder-synthesized; the builder documents the scheme per network in `meta.provenance` |
 | `node` | string | Node id |
 | `control_mode` | string | As observed (`FT`, `SA1`, `SAV`, …) — descriptive; control *policy* is kernel-side (ADR-0002 amendment) |
 | `offset_s` | float | Plan offset |

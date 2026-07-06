@@ -22,6 +22,7 @@ The emphasis is **transparency, not automation** — this tool is meant to infor
 - [Data sources](#data-sources)
 - [Validation & calibration](#validation--calibration)
 - [Roadmap](#roadmap)
+- [Beyond Toronto: portability](#beyond-toronto-portability)
 - [Initial project scope (v0.1)](#initial-project-scope-v01)
 - [Example research questions](#example-research-questions)
 - [Getting started](#getting-started)
@@ -208,6 +209,17 @@ The full methodology — verification/calibration/validation distinctions, GEH a
 - **Phase 4 — Natural language interface.** A conversational layer over simulation results (e.g. "Why is Allen Road congested?", "What happens if I add another lane?"), backed by and explainable in terms of actual simulation output.
 
 Phases 2–4 are intentionally left at vision-level detail for now — they'll be scoped in `docs/` once Phase 1 has produced a calibrated baseline to build on.
+
+## Beyond Toronto: portability
+
+Toronto is the **reference implementation, not a hard dependency**. If the methodology proves out here, the same platform should be portable to other cities — both as a decision-support tool and as a training/evaluation environment for adaptive signal control. The architecture is layered accordingly:
+
+- **City-agnostic core:** the simulation kernel, the network/demand/scenario file formats, the scenario engine, evaluation metrics, and (later) signal-control policies all operate on the versioned network format and never reference a specific city.
+- **Per-city adapters at the edges:** municipal open-data ingestion, local identifier mappings (e.g. Toronto's PX signal numbers), corridor definitions, and calibration datasets are city-specific by nature and live in clearly separated importer modules and data files. OSM/GTFS import is already city-agnostic by construction.
+
+Porting to a new city therefore means: write its data adapters, then run the calibration methodology ([docs/validation.md](docs/validation.md)) against its data. The binding constraint is **data availability, not code** — Toronto's open data (turning counts, signal timing and control modes) is unusually good, and validation.md's data requirements double as the checklist any target city must satisfy.
+
+This is a design discipline enforced from v0.1 (see [AGENTS.md](AGENTS.md)), *not* a feature being built now: one calibrated corridor in one city comes first.
 
 ## Initial project scope (v0.1)
 
