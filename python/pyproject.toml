@@ -20,6 +20,18 @@ dev = [
     "black>=24",
     "maturin>=1.9,<2",
 ]
+# Geo/data stack per the README tech-stack table (osmnx/networkx/geopandas/
+# shapely), plus two small utilities the recon scripts need: requests (CKAN
+# API; already transitive via osmnx) and openpyxl (City data dictionaries
+# ship as .xlsx).
+data = [
+    "osmnx>=2",
+    "networkx>=3",
+    "geopandas>=1",
+    "shapely>=2",
+    "requests>=2",
+    "openpyxl>=3",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/traffic_sim"]

@@ -56,16 +56,16 @@ Standards below follow common traffic-engineering practice (UK DMRB/TAG conventi
 - Every calibrated parameter (car-following constants, reaction times, compliance rates) lives in **versioned config, never hardcoded** — a calibration result is a config artifact, referenced by experiment files like any other input.
 - The chosen car-following model (IDM vs. Krauss vs. other — to be decided at implementation) is documented with its equations and the rationale, as a visible assumption.
 
-## Data needed (v0.1 corridor) — to be confirmed against actual availability
+## Data needed (v0.1 corridor) — availability confirmed 2026-07-06 (see [data-sources.md](data-sources.md))
 
 | Need | Candidate source | Status |
 |---|---|---|
-| Turning movement counts (demand input + consistency) | City of Toronto Open Data (turning movement counts) | TBD — locate counts for corridor intersections; check dates/periods |
-| Travel times (validation) | City of Toronto travel time studies; Bluetooth/WiFi sensor data if published; otherwise floating-car runs | TBD — this is the critical gap to resolve first; without independent travel times, v0.1 cannot be validated |
-| Signal timing **and controller type** (input, not target) | City of Toronto signal timing data / FOI if needed | TBD — controller type (fixed-time vs. vehicle-actuated vs. SCOOT) per corridor intersection determines whether v0.1's fixed-time signal policy can reproduce the baseline at all; if key intersections are actuated, the actuated policy (ADR-0002 amendment) moves up the schedule |
-| Queue observations (validation) | May require manual observation/video at Allen/Eglinton if no dataset exists | TBD |
+| Turning movement counts (demand input + consistency) | City of Toronto Open Data (turning movement counts) | **FOUND** — every key corridor junction has a recent 14-h count (Allen/Eglinton W+E 2026-03-24; others 2025–2026); supports a 2025–2026 baseline year |
+| Travel times (validation) | City of Toronto travel time studies; Bluetooth/WiFi sensor data if published; otherwise floating-car runs | **GAP CONFIRMED** — the only public source (Travel Times – Bluetooth) is 2014–2017, dormant, and from the Crosstown-construction era, so it can't validate a 2025–2026 baseline; primary mitigation is floating-car GPS runs (protocol to be defined), with licensed probe data as the paid alternative and midblock speed counts as weak spot checks |
+| Signal timing **and controller type** (input, not target) | City of Toronto signal timing data / FOI if needed | **FOUND** — no FOI needed: Traffic Signal Timing (rolling 7-day TransSuite phasing; archive windows we care about) + Traffic Signals Tabular (`CONTROL_MODE` per intersection). Finding: key corridor junctions are predominantly **semi-actuated** (Eglinton/Allen = SA1/SAV; only Dufferin/Eglinton and Bathurst/Bloor are fixed-time) — the actuated policy (ADR-0002 amendment) **moves up the schedule** |
+| Queue observations (validation) | May require manual observation/video at Allen/Eglinton if no dataset exists | **MISSING (confirmed)** — no portal dataset; manual observation/video fallback stands |
 
-**Open risk:** if no independent travel-time source exists for the corridor, validation degrades to queue-pattern plausibility — acceptable for a first milestone but must be stated honestly in any result. Resolving travel-time data availability is an early data-work priority.
+**Open risk (updated 2026-07-06):** the travel-time gap is confirmed for a modern baseline. Unless floating-car runs (or paid probe data) materialize, validation degrades to queue-pattern plausibility plus midblock speed spot checks — acceptable for a first milestone but must be stated honestly in any result. Secondary consequence: because the corridor's key signals are semi-actuated, a fixed-time-only signal model may not reproduce baseline behavior; the vehicle-actuated policy is likely needed for calibration, not merely optional.
 
 ## What "v0.1 is calibrated" means (exit criteria)
 

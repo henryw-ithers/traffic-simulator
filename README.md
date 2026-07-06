@@ -184,7 +184,7 @@ Metrics are tracked across modes, not just for vehicles:
 | Transit | TTC GTFS static + GTFS Realtime, station usage, ridership reports |
 | Demographics | Census data, employment data, population, land use, schools, hospitals, commercial centres |
 
-All datasets are fetched from their public sources at build/run time rather than committed to the repo. Licensing and attribution terms for each source should be recorded in `docs/data-sources.md` before redistribution of any derived data.
+All datasets are fetched from their public sources at build/run time rather than committed to the repo. Licensing, attribution, fetch scripts, and corridor-coverage verdicts for each source are recorded in [docs/data-sources.md](docs/data-sources.md).
 
 ## Validation & calibration
 
